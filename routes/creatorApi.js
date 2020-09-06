@@ -34,13 +34,12 @@ creatorRouter.get('/', async function (req, res) {
     if (isEvents && isShows) {
         const creators = await sequelize
             .query(
-                `SELECT *
-                    FROM Users AS u,
-                         Events AS e,
-                         Shows AS s
-                    WHERE s.showEventID = e.id
-                    AND e.creatorID = 'u.id'`
+                `SELECT u.firstName, u.lastName, u.about, u.imageURL, AVG(s.amount) AS rating
+                FROM Users AS u, Show_Ratings AS s
+                WHERE u.userRole = 'Creator'
+                AND s.showRatingUserID = u.id`
             )
+        console.log(creators)
         res.send(creators[0])
     }
     else if (isEvents) {
@@ -64,6 +63,7 @@ creatorRouter.get('/', async function (req, res) {
             )
         res.send(creators[0])
     }
+
 })
 
 creatorRouter.get('/:id', async function (req, res) {
@@ -71,65 +71,68 @@ creatorRouter.get('/:id', async function (req, res) {
     let numOfShows = 0
     const { id } = req.params
     const creator = {}
-    const Data = await sequelize
-        .query(
-            `SELECT * FROM Users
-            WHERE Users.id = '${escape(id)}'`
-        )
-        console.log(Data)
-    creator['Data'] = Data[0][0]
-
-    const Events = await sequelize
-        .query(
-            `SELECT * FROM Events
-            WHERE creatorID = '${escape(id)}'`
-        )
-    if (Events[0].length) {
-        const Shows = await sequelize
+    try {
+        const Data = await sequelize
             .query(
-                `SELECT * FROM Shows
+                `SELECT * FROM Users
+            WHERE Users.id = '${escape(id)}'`
+            )
+
+        creator['Data'] = Data[0][0]
+        const Events = await sequelize
+            .query(
+                `SELECT * FROM Events
+            WHERE creatorID = '${escape(id)}'`
+            )
+        if (Events[0].length) {
+            const Shows = await sequelize
+                .query(
+                    `SELECT * FROM Shows
             WHERE showEventID = ${Events[0][0].id}
             GROUP BY showEventID`
-            )
-        const ratings = await sequelize
-            .query(
-                `SELECT AVG(amount) AS rating, showRatingShowID
+                )
+            const ratings = await sequelize
+                .query(
+                    `SELECT AVG(amount) AS rating, showRatingShowID
             FROM Show_Ratings
             GROUP BY Show_Ratings.showRatingShowID`
-            )
- 
-        creator['Events'] = Events[0]
-        for (let event of creator.Events) {
-            let Show = {}
-            let futureShows = []
-            let pastShows = []
-            for (let show of Shows[0]) {
-                numOfShows++
-                let found = ratings[0].find(r => r.showRatingShowID === show.id)
-                if (found) rating += parseFloat(found.rating.slice(0, 3))
-                Shows.push({ ...Show })
-                if (show.showEventID === event.id) {
-                    moment() < moment(show.startTime).tz("Europe/Paris") ?
-                        futureShows.push(show) :
-                        pastShows.push(show)
-                }
-            }
-            event['shows'] = [...Shows[0]]
-            event['futureShows'] = [...futureShows]
-            event['pastShows'] = [...pastShows]
-        }
-        
-        rating /= (numOfShows*Events[0].length)
-    }
-    const Reviews = await sequelize
-        .query(
-            `SELECT * FROM Creator_Reviews
-            WHERE Creator_Reviews.reviewCreatorID = '${id}'`
-        )
-    creator['rating'] = rating
-    creator['Reviews'] = Reviews[0]
+                )
 
-    res.send(creator)
+            creator['Events'] = Events[0]
+            for (let event of creator.Events) {
+                let Show = {}
+                let futureShows = []
+                let pastShows = []
+                for (let show of Shows[0]) {
+                    numOfShows++
+                    let found = ratings[0].find(r => r.showRatingShowID === show.id)
+                    if (found) rating += parseFloat(found.rating.slice(0, 3))
+                    Shows.push({ ...Show })
+                    if (show.showEventID === event.id) {
+                        moment() < moment(show.startTime).tz("Europe/Paris") ?
+                            futureShows.push(show) :
+                            pastShows.push(show)
+                    }
+                }
+                event['shows'] = [...Shows[0]]
+                event['futureShows'] = [...futureShows]
+                event['pastShows'] = [...pastShows]
+            }
+
+            rating /= (numOfShows * Events[0].length)
+        }
+        const Reviews = await sequelize
+            .query(
+                `SELECT * FROM Creator_Reviews
+            WHERE Creator_Reviews.reviewCreatorID = '${id}'`
+            )
+        creator['rating'] = rating
+        creator['Reviews'] = Reviews[0]
+
+        res.send(creator)
+    } catch (err) {
+        res.send('get failed')
+    }
 })
 
 creatorRouter.get('/general/details', async function (req, res) {

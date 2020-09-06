@@ -22,8 +22,5 @@ app.use('/api/users/', userRouter)
 app.use('/api/reviews/', reviewRouter)
 app.use('/api/ratings/', ratingRouter)
 app.use('/api/events/', eventRouter)
-app.use('/ok', (req,res) => {
-    res.send('ok')
-})
 
 app.listen(8080, () => console.log("server up and running on port 8080"))

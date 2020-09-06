@@ -28,13 +28,6 @@ const sequelize = new Sequelize(
         language: 'en',
     }
 )
-
-
-userRouter.get('/', async function (req, res) {
-    const users = await sequelize
-        .query(`SELECT * FROM Users`)
-    res.send(users[0])
-})
 const clearUserId =(userId)=>{
     let newLineIndex = userId.indexOf('|')
     let newUserId = userId
@@ -43,6 +36,14 @@ const clearUserId =(userId)=>{
     }
     return newUserId
 }
+
+
+userRouter.get('/', async function (req, res) {
+    const users = await sequelize
+        .query(`SELECT * FROM Users`)
+    res.send(users[0])
+})
+
 userRouter.get('/:id', async function (req, res) {
     const id = clearUserId(req.params.id)
     const user = {}
@@ -51,7 +52,7 @@ userRouter.get('/:id', async function (req, res) {
     try {
         const userData = await sequelize
             .query(
-                `SELECT id, username, imageURL
+                `SELECT id, username, imageURL, userRole
              FROM Users
              WHERE Users.id LIKE '%${id}%'`
             )
