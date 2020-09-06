@@ -51,7 +51,7 @@ userRouter.get('/:id', async function (req, res) {
     try {
         const userData = await sequelize
             .query(
-                `SELECT id, username, imageURL, userRole, coverImgURL
+                `SELECT id, username, imageURL
              FROM Users
              WHERE Users.id LIKE '%${id}%'`
             )
@@ -67,8 +67,6 @@ userRouter.get('/:id', async function (req, res) {
                 futureShows.push(show) :
                 pastShows.push(show)
         }
-        user['id'] = userData[0][0].id
-        user['userRole'] = userData[0][0].userRole
         user['username'] = userData[0][0].username
         user['imageURL'] = userData[0][0].imageURL
         user['pastShows'] = pastShows
