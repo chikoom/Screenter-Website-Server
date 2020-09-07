@@ -141,7 +141,6 @@ creatorRouter.get('/:id', async function (req, res) {
             rating /= (numOfShows * Events[0].length)
         } else {
             creator["Events"] = [];
-            rating /= numOfRatedShows
         }
         const Reviews = await sequelize
             .query(
