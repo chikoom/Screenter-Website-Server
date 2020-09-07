@@ -88,7 +88,7 @@ userRouter.post('/show', async function (req, res) {
     let showID  = req.body.showID
     console.log(showID)
     console.log(req.body.userID)
-    let userID = clearUserId(req.body.userID)
+    let userID =escape(req.body.userID)
     try {
         await sequelize
             .query(
@@ -107,7 +107,7 @@ userRouter.post('/show', async function (req, res) {
         res.send(saved[0][0])
     }
     catch (err) {
-        res.send('saving error')
+        res.send("saving error")
     }
 })
 userRouter.delete('/show/:userID/:showID', async function (req, res) {
