@@ -28,11 +28,11 @@ const sequelize = new Sequelize(
         language: 'en',
     }
 )
-const clearUserId =(userId)=>{
+const clearUserId = (userId) => {
     let newLineIndex = userId.indexOf('|')
     let newUserId = userId
-    if(newLineIndex>0){
-        newUserId = newUserId.substring(newLineIndex + 1 , newUserId.length - 1)
+    if (newLineIndex > 0) {
+        newUserId = newUserId.substring(newLineIndex + 1, newUserId.length - 1)
     }
     return newUserId
 }
@@ -79,25 +79,47 @@ userRouter.get('/:id', async function (req, res) {
 })
 
 userRouter.post('/show', async function (req, res) {
-    const { userID, showID } = req.body
+    let showID  = req.body.showID
+    console.log(showID)
+    console.log(req.body.userID)
+    let userID = clearUserId(req.body.userID)
     try {
         await sequelize
             .query(
                 `INSERT INTO User_Shows VALUES(
-                               '${escape(userID)}',
+                               '${userID}',
                                 ${showID}
                             )`
             )
-
+        ///not hapend \\\\\\///////
         const saved = await sequelize
             .query(
-                `SELECT * FROM User_Shows
-                WHERE User_Shows.id = LAST_INSERT_ID()`
+                `SELECT * FROM Shows
+                WHERE Shows.id = ${showID}`
             )
+        console.log(saved, "==============================================================")
+        ///not hapend //////\\\\\\\
         res.send(saved[0][0])
     }
     catch (err) {
         res.send('saving error')
+    }
+})
+userRouter.delete('/show/:userID/:showID', async function (req, res) {
+    const { userID , showID } = req.params
+    console.log(req.params , "============")
+    try {
+        const result = await sequelize
+            .query(
+                `DELETE FROM User_Shows
+            WHERE userID = '${userID}'
+            AND showID = ${showID}`
+            )
+            console.log(result)
+        res.send("trgdfgdfgdgdfgdfgdfgdfgdfue")
+    }
+    catch (err) {
+        res.send("error")
     }
 })
 
@@ -138,14 +160,14 @@ userRouter.post('/', async function (req, res) {
                                          ${isAuthorized},
                                         '${phone}'
                                     )`
-        )
-                    console.log("firstQuery")
+            )
+        console.log("firstQuery")
         const saved = await sequelize
             .query(
                 `SELECT * FROM Users
             WHERE Users.id = '${escape(id)}'`
             )
-            console.log(saved , "fdgfgsdfgsdfgfdhsdfgsfgsdfgfdhsgfsgdfggs")
+        console.log(saved, "fdgfgsdfgsdfgfdhsdfgsfgsdfgfdhsgfsgdfggs")
         res.send(saved[0][0])
     }
     catch (err) {
