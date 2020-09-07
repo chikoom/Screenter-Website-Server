@@ -31,49 +31,56 @@ const sequelize = new Sequelize(
 
 creatorRouter.get('/', async function (req, res) {
     const { isEvents, isShows } = req.query
+    let Creator = {}
+    const Creators = []
     if (isEvents && isShows) {
         const creators = await sequelize
             .query(
-                `SELECT u.firstName,
+                `SELECT u.id,
+                        u.firstName,
                         u.lastName,
                         u.about,
                         u.imageURL
-                        FROM Users AS u,
-                        Show_Ratings AS s,
-                        Events AS e
-                        WHERE u.userRole = 'CREATOR'
-                        AND s.showRatingEventID = e.id`
+                        FROM Users AS u
+                        WHERE u.userRole = 'CREATOR'`
             )
-            // AVG(s.amount) AS rating
         const rating = await sequelize
             .query(
-                `SELECT amount AS rating, showRatingEvendID AS eventID
-                FROM Show_Ratings`
+                `SELECT AVG(amount) AS rating, showRatingEventID AS eventID, creatorID
+                FROM Show_Ratings AS s, Events As e
+                WHERE e.id = s.showRatingEventID 
+                GROUP BY creatorID`
             )
-            console.log(rating[0])
-        res.send(creators[0])
-    }
+
+        for (let c of creators[0]) {
+            Creator = { ...c }
+            let found = rating[0].find(r => r.creatorID === c.id)
+            if(found)Creator['rating'] = found.rating
+            Creators.push({...Creator})
+        }
+    res.send(Creators)
+}
     else if (isEvents) {
-        const creators = await sequelize
-            .query(
-                `SELECT *
+    const creators = await sequelize
+        .query(
+            `SELECT *
                      FROM Users AS u,
                           Events AS e
                      WHERE e.creatorID = 'u.id'`
-            )
-        res.send(creators[0])
-    }
-    else {
-        const creators = await sequelize
-            .query(
-                `SELECT *
+        )
+    res.send(creators[0])
+}
+else {
+    const creators = await sequelize
+        .query(
+            `SELECT *
                     FROM Users
                     WHERE userRole = 'Creator'
                     AND id NOT IN(SELECT creatorID
                                 FROM Events)`
-            )
-        res.send(creators[0])
-    }
+        )
+    res.send(creators[0])
+}
 
 })
 
@@ -113,7 +120,6 @@ creatorRouter.get('/:id', async function (req, res) {
                 WHERE Shows.showEventID = ${event.id}
                 `
                     )
-                console.log(Shows[0])
                 for (let show of Shows[0]) {
                     let found = ratings[0].find(r => r.showRatingShowID === show.id)
                     if (found) {
