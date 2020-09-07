@@ -46,7 +46,6 @@ reviewRouter.get('/:id', async function (req, res) {
 
 reviewRouter.post('/creator', async function (req, res) {
     const {
-        id,
         header,
         text,
         reviewUserID,
@@ -58,7 +57,7 @@ reviewRouter.post('/creator', async function (req, res) {
         await sequelize
             .query(
                 `INSERT INTO Creator_Reviews VALUES(
-                                         ${id},
+                                         null,
                                         '${header}',
                                         '${text}',
                                          ${reviewUserID},
@@ -71,7 +70,7 @@ reviewRouter.post('/creator', async function (req, res) {
         const isReviewSaved = await sequelize
             .query(
                 `SELECT * FROM Creator_Reviews
-                WHERE Creator_Reviews.id = ${id}`
+                WHERE Creator_Reviews.id = LAST_INSERT_ID()`
             )
         res.send(isReviewSaved[0][0])
     }
@@ -82,7 +81,6 @@ reviewRouter.post('/creator', async function (req, res) {
 
 reviewRouter.post('/show', async function (req, res) {
     const {
-        id,
         header,
         text,
         reviewUserID,
@@ -95,7 +93,7 @@ reviewRouter.post('/show', async function (req, res) {
         await sequelize
             .query(
                 `INSERT INTO Show_Review VALUES(
-                                         ${id},
+                                         null,
                                         '${header}',
                                         '${text}',
                                          ${reviewUserID},
@@ -108,7 +106,7 @@ reviewRouter.post('/show', async function (req, res) {
         const isReviewSaved = await sequelize
             .query(
                 `SELECT * FROM Show_Reviews
-                WHERE Show_Review.id = ${id}`
+                WHERE Show_Review.id = LAST_INSERT_ID()`
             )
         res.send(isReviewSaved[0][0])
     }

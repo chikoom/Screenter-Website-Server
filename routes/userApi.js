@@ -28,13 +28,6 @@ const sequelize = new Sequelize(
         language: 'en',
     }
 )
-
-
-userRouter.get('/', async function (req, res) {
-    const users = await sequelize
-        .query(`SELECT * FROM Users`)
-    res.send(users[0])
-})
 const clearUserId =(userId)=>{
     let newLineIndex = userId.indexOf('|')
     let newUserId = userId
@@ -43,6 +36,14 @@ const clearUserId =(userId)=>{
     }
     return newUserId
 }
+
+
+userRouter.get('/', async function (req, res) {
+    const users = await sequelize
+        .query(`SELECT * FROM Users`)
+    res.send(users[0])
+})
+
 userRouter.get('/:id', async function (req, res) {
     const id = clearUserId(req.params.id)
     const user = {}
@@ -51,7 +52,7 @@ userRouter.get('/:id', async function (req, res) {
     try {
         const userData = await sequelize
             .query(
-                `SELECT id, username, imageURL, userRole, coverImgURL
+                `SELECT id, username, imageURL, userRole
              FROM Users
              WHERE Users.id LIKE '%${id}%'`
             )
@@ -80,20 +81,19 @@ userRouter.get('/:id', async function (req, res) {
 })
 
 userRouter.post('/show', async function (req, res) {
-    const { userID, showID } = req.body
+    const { showID, userID } = req.body
     try {
         await sequelize
             .query(
                 `INSERT INTO User_Shows VALUES(
-                               '${escape(userID)}',
+                               '${userID}',
                                 ${showID}
                             )`
             )
-
         const saved = await sequelize
             .query(
-                `SELECT * FROM User_Shows
-                WHERE User_Shows.id = LAST_INSERT_ID()`
+                `SELECT * FROM Shows
+                WHERE Shows.id = ${showID}`
             )
         res.send(saved[0][0])
     }
@@ -173,6 +173,22 @@ userRouter.put('/:id', async function (req, res) {
         res.send(false)
     }
 
+})
+
+userRouter.delete('/show/:userID/:showID', async function (req, res) {
+    const { userID , showID } = req.params
+    try {
+        await sequelize
+            .query(
+                `DELETE FROM User_Shows
+            WHERE userID = '${userID}'
+            AND showID = ${showID}`
+            )
+        res.send(true)
+    }
+    catch (err) {
+        res.send(false)
+    }
 })
 
 userRouter.delete('/:id', async function (req, res) {

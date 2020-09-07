@@ -73,6 +73,7 @@ eventRouter.get('/', async function (req, res) {
         event['hashtags'] = [...hashes]
         Events.push({ ...event })
     }
+    console.log(Events)
     res.send(Events)
 
 })
@@ -128,7 +129,6 @@ eventRouter.get('/:id', async function (req, res) {
 
 eventRouter.post('/event', async function (req, res) {
     const {
-        id,
         name,
         description,
         imageURL,
@@ -143,7 +143,7 @@ eventRouter.post('/event', async function (req, res) {
         await sequelize
             .query(
                 `INSERT INTO Events VALUES(
-                                         ${id},
+                                         null,
                                         '${name}',
                                         '${description}',
                                         '${imageURL}',
@@ -156,8 +156,7 @@ eventRouter.post('/event', async function (req, res) {
             )
         const EventId = await sequelize
             .query(`SELECT id FROM Events
-                    WHERE Events.name = '${name}'`)
-                    
+                    WHERE Events.name = '${name}'`)         
         for (let hashtag of hashtags) {
             const hashtagID = await sequelize
                 .query(`SELECT id FROM Hashtags
@@ -203,7 +202,7 @@ eventRouter.post('/show', async function (req, res) {
         await sequelize
             .query(
                 `INSERT INTO Shows VALUES(
-                                         ${id},
+                                         null,
                                         '${startTime}',
                                         '${endTime}',
                                          ${showEventID}
