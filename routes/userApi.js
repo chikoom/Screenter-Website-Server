@@ -64,11 +64,15 @@ userRouter.get('/:id', async function (req, res) {
             AND u.userId LIKE '%${id}%'`
             )
         for (let show of shows[0]) {
-            moment() < moment(show.startTime).tz("Europe/Paris") ?
+            moment() < moment(show.startTime).tz("Asia/Jerusalem") ?
                 futureShows.push(show) :
                 pastShows.push(show)
         }
         user['id'] = userData[0][0].id
+        user['firstName'] = userData[0][0].firstName
+        user['lastName'] = userData[0][0].lastName
+        user['email'] = userData[0][0].email
+        user['phone'] = userData[0][0].phone
         user['userRole'] = userData[0][0].userRole
         user['username'] = userData[0][0].username
         user['imageURL'] = userData[0][0].imageURL
@@ -81,20 +85,19 @@ userRouter.get('/:id', async function (req, res) {
 })
 
 userRouter.post('/show', async function (req, res) {
-    const { userID, showID } = req.body
+    const { showID, userID } = req.body
     try {
         await sequelize
             .query(
                 `INSERT INTO User_Shows VALUES(
-                               '${escape(userID)}',
+                               '${userID}',
                                 ${showID}
                             )`
             )
-
         const saved = await sequelize
             .query(
-                `SELECT * FROM User_Shows
-                WHERE User_Shows.id = LAST_INSERT_ID()`
+                `SELECT * FROM Shows
+                WHERE Shows.id = ${showID}`
             )
         res.send(saved[0][0])
     }
@@ -141,13 +144,11 @@ userRouter.post('/', async function (req, res) {
                                         '${phone}'
                                     )`
         )
-                    console.log("firstQuery")
         const saved = await sequelize
             .query(
                 `SELECT * FROM Users
             WHERE Users.id = '${escape(id)}'`
             )
-            console.log(saved , "fdgfgsdfgsdfgfdhsdfgsfgsdfgfdhsgfsgdfggs")
         res.send(saved[0][0])
     }
     catch (err) {
@@ -174,6 +175,22 @@ userRouter.put('/:id', async function (req, res) {
         res.send(false)
     }
 
+})
+
+userRouter.delete('/show/:userID/:showID', async function (req, res) {
+    const { userID , showID } = req.params
+    try {
+        await sequelize
+            .query(
+                `DELETE FROM User_Shows
+            WHERE userID = '${userID}'
+            AND showID = ${showID}`
+            )
+        res.send(true)
+    }
+    catch (err) {
+        res.send(false)
+    }
 })
 
 userRouter.delete('/:id', async function (req, res) {
