@@ -1,4 +1,5 @@
 const express = require('express')
+const moment = require('moment');
 const Sequelize = require('sequelize')
 const reviewRouter = express.Router()
 require('dotenv').config()
@@ -60,9 +61,9 @@ reviewRouter.post('/creator', async function (req, res) {
                                          null,
                                         '${header}',
                                         '${text}',
-                                         ${reviewUserID},
-                                         ${reviewCreatorID},
-                                        '${time}',
+                                        '${reviewUserID}',
+                                        '${reviewCreatorID}',
+                                        '${moment(time)}',
                                          ${parentReview}
                                     )`
             )

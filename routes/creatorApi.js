@@ -137,12 +137,16 @@ creatorRouter.get('/:id', async function (req, res) {
                 event['futureShows'] = [...futureShows]
                 event['pastShows'] = [...pastShows]
             }
+
+            rating /= (numOfShows * Events[0].length)
+        } else {
+            creator["Events"] = [];
             rating /= numOfRatedShows
         }
         const Reviews = await sequelize
             .query(
                 `SELECT * FROM Creator_Reviews
-            WHERE Creator_Reviews.reviewCreatorID = '${id}'`
+            WHERE Creator_Reviews.reviewCreatorID = '${escape(id)}'`
             )
         creator['rating'] = rating
         creator['Reviews'] = Reviews[0]
@@ -227,7 +231,7 @@ creatorRouter.put('/:id', async function (req, res) {
             .query(
                 `UPDATE Users
             SET ${field} = ${value}
-            WHERE id = '${id}'`
+            WHERE id = '${escape(id)}'`
             )
         res.send(true)
     }
