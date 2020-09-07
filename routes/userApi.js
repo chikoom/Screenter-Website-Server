@@ -64,10 +64,16 @@ userRouter.get('/:id', async function (req, res) {
             AND u.userId = '${escape(id)}'`
             )
         for (let show of shows[0]) {
-            moment() < moment(show.startTime).tz("Europe/Paris") ?
+            moment() < moment(show.startTime).tz("Asia/Jerusalem") ?
                 futureShows.push(show) :
                 pastShows.push(show)
         }
+        user['id'] = userData[0][0].id
+        user['firstName'] = userData[0][0].firstName
+        user['lastName'] = userData[0][0].lastName
+        user['email'] = userData[0][0].email
+        user['phone'] = userData[0][0].phone
+        user['userRole'] = userData[0][0].userRole
         user['username'] = userData[0][0].username
         user['imageURL'] = userData[0][0].imageURL
         user['pastShows'] = pastShows
@@ -91,7 +97,6 @@ userRouter.post('/show', async function (req, res) {
                                 ${showID}
                             )`
             )
-        ///not hapend \\\\\\///////
         const saved = await sequelize
             .query(
                 `SELECT * FROM Shows
@@ -194,6 +199,22 @@ userRouter.put('/:id', async function (req, res) {
         res.send(false)
     }
 
+})
+
+userRouter.delete('/show/:userID/:showID', async function (req, res) {
+    const { userID , showID } = req.params
+    try {
+        await sequelize
+            .query(
+                `DELETE FROM User_Shows
+            WHERE userID = '${userID}'
+            AND showID = ${showID}`
+            )
+        res.send(true)
+    }
+    catch (err) {
+        res.send(false)
+    }
 })
 
 userRouter.delete('/:id', async function (req, res) {
