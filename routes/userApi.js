@@ -61,7 +61,7 @@ userRouter.get('/:id', async function (req, res) {
                 `SELECT * 
             FROM Shows AS s, User_Shows AS u
             WHERE s.id = u.showId
-            AND u.userId = '${escape(id)}'`
+            AND u.userId LIKE '%${id}%'`
             )
         for (let show of shows[0]) {
             moment() < moment(show.startTime).tz("Asia/Jerusalem") ?
@@ -165,14 +165,12 @@ userRouter.post('/', async function (req, res) {
                                          ${isAuthorized},
                                         '${phone}'
                                     )`
-            )
-        console.log("firstQuery")
+        )
         const saved = await sequelize
             .query(
                 `SELECT * FROM Users
             WHERE Users.id = '${escape(id)}'`
             )
-        console.log(saved, "fdgfgsdfgsdfgfdhsdfgsfgsdfgfdhsgfsgdfggs")
         res.send(saved[0][0])
     }
     catch (err) {
@@ -191,7 +189,7 @@ userRouter.put('/:id', async function (req, res) {
             .query(
                 `UPDATE Users
             SET ${field} = ${value}
-            WHERE id = '${id}'`
+            WHERE id = '${escape(id)}'`
             )
         res.send(true)
     }
