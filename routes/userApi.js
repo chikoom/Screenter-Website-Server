@@ -61,7 +61,7 @@ userRouter.get('/:id', async function (req, res) {
                 `SELECT * 
             FROM Shows AS s, User_Shows AS u
             WHERE s.id = u.showId
-            AND u.userId = '${escape(id)}'`
+            AND u.userId LIKE '%${id}%'`
             )
         for (let show of shows[0]) {
             moment() < moment(show.startTime).tz("Europe/Paris") ?
@@ -166,7 +166,7 @@ userRouter.put('/:id', async function (req, res) {
             .query(
                 `UPDATE Users
             SET ${field} = ${value}
-            WHERE id = '${id}'`
+            WHERE id = '${escape(id)}'`
             )
         res.send(true)
     }

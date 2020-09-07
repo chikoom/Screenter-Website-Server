@@ -1,4 +1,5 @@
 const express = require('express')
+const moment = require('moment');
 const Sequelize = require('sequelize')
 const reviewRouter = express.Router()
 require('dotenv').config()
@@ -61,9 +62,9 @@ reviewRouter.post('/creator', async function (req, res) {
                                          ${id},
                                         '${header}',
                                         '${text}',
-                                         ${reviewUserID},
-                                         ${reviewCreatorID},
-                                        '${time}',
+                                        '${reviewUserID}',
+                                        '${reviewCreatorID}',
+                                        '${moment(time)}',
                                          ${parentReview}
                                     )`
             )
@@ -71,7 +72,7 @@ reviewRouter.post('/creator', async function (req, res) {
         const isReviewSaved = await sequelize
             .query(
                 `SELECT * FROM Creator_Reviews
-                WHERE Creator_Reviews.id = ${id}`
+                WHERE Creator_Reviews.id = LAST_INSERT_ID()`
             )
         res.send(isReviewSaved[0][0])
     }
